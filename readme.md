@@ -1,5 +1,7 @@
 ## Precio_Dolar by Andres
 
-Aplicacion Python para verificar el ultimo precio del dolar actualizado.
+Python application, obtains the last dolar price in Argentina.
+You have Official Dolar or Blue Dolar to choise. Select one or selec the compare function.
+Thanks for nothing Alberto!
+Enjoy it!
 
-Seleccionar desde el menu la opcion deseada, se imprime en pantalla el precio del dolar.
