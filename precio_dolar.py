@@ -1,6 +1,7 @@
 import requests
 import os
 from tabulate import tabulate
+import argparse
 
 def validate_numbers(number):
     """Recieves a variable, and try to make a casting to int var,
@@ -13,7 +14,7 @@ def validate_numbers(number):
     try:
         number=int(number)
         return number
-    except:
+    except ValueError:
         print('Ingrese solo un VALOR NUMERICO...')
         number=input('>>>')
         number = validate_numbers(number)
@@ -47,12 +48,22 @@ def dolar_oficial(options =0):
     """
     print ('Obteniendo datos....')
     try:
-        r = requests.get('https://api-dolar-argentina.herokuapp.com/api/dolaroficial')
+        r = requests.get(official_url)
         response_value = r.json()
-    except:
+    except requests.exceptions.ConnectionError:
         print ('Error al conectar con el servidor...')
+        input ('Presione ENTER para continuar...')
+        return None
+    except requests.exceptions.JSONDecodeError:
+        print ('Error al obtener los datos. Verifique URL.')
+        input ('Presione ENTER para continuar...')
+        return None
+    except requests.exceptions.MissingSchema:
+        print ('Error al obtener los datos. Verifique URL.')
+        input ('Presione ENTER para continuar...')
         return None
     if options == 0:
+        os.system('cls')
         print ('PRECIOS DOLAR OFICIAL')
         print ('Precio de Compra: ',response_value['compra'])
         print ('Precio de venta: ',response_value['venta'])
@@ -73,12 +84,22 @@ def dolar_blue(options = 0):
     """
     print ('Obteniendo datos....')
     try:
-        r = requests.get('https://api-dolar-argentina.herokuapp.com/api/dolarblue')
+        r = requests.get(blue_url)
         response_value = r.json()
-    except:
+    except requests.exceptions.ConnectionError:
         print ('Error al conectar con el servidor...')
+        input ('Presione ENTER para continuar...')
+        return None
+    except requests.exceptions.JSONDecodeError:
+        print ('Error al obtener los datos. Verifique URL.')
+        input ('Presione ENTER para continuar...')
+        return None
+    except requests.exceptions.MissingSchema:
+        print ('Error al obtener los datos. Verifique URL.')
+        input ('Presione ENTER para continuar...')
         return None
     if options == 0:
+        os.system('cls')
         print ('PRECIOS DOLAR BLUE')
         print ('Precio de Compra: ',response_value['compra'])
         print ('Precio de venta: ',response_value['venta'])
@@ -96,15 +117,59 @@ def compare_prices():
     Returns:
         None
     """
-    ofdicial_price = dolar_oficial(options=1)
+    official_price = dolar_oficial(options=1)
     blue_price = dolar_blue(options=1)
-    list_to_print= [['OFICIAL',ofdicial_price['compra'],ofdicial_price['venta']],['BLUE',blue_price['compra'],blue_price['venta']]]
-    print (tabulate(list_to_print,['TIPO','COMPRA','VENTA']))
-    print ('Precios actualizados al dia : ',ofdicial_price['fecha'][0:10])
-    input ('Presione ENTER para continuar...')
+    try:
+        list_to_print= [['OFICIAL',official_price['compra'],official_price['venta']],['BLUE',blue_price['compra'],blue_price['venta']]]
+        os.system('cls')
+        print (tabulate(list_to_print,['TIPO','COMPRA','VENTA']))
+        print ('Precios actualizados al dia : ',official_price['fecha'][0:10])
+        input ('Presione ENTER para continuar...')
+    except TypeError:
+        print ("Error en formato al obtener los datos, verifique URL...")
+        input ('Presione ENTER para continuar...')
+
+
+#create parser
+parser = argparse.ArgumentParser()
+parser.add_argument('--burl', type=str, help='Url de la API para obtener el precio del Dolar Blue',required=False)
+parser.add_argument('--ourl', type=str, help='Url de la API para obtener el preciodel Dolar Oficial',required=False)
+parser.add_argument('--type', type=str, help='"oficial" para obtener oficial, "blue" para obtener blue',required=False)
+args = parser.parse_args()
+
+#set defaults urls and type of selection
+blue_url ='https://api-dolar-argentina.herokuapp.com/api/dolarblue'
+official_url ='https://api-dolar-argentina.herokuapp.com/api/dolaroficial'
+price_selected = 0
+
+#take the URLS and the type of dollar to get price if the program have arguments
+if args.burl:
+    blue_url = args.burl
+if args.ourl:
+    official_url = args.ourl
+if args.type:
+    price_selected = args.type
+
+#set flag=0
+flag=0
 
 while True:
     os.system('cls')
+    #default starts program, flag = 0
+    if flag == 0:
+        if price_selected == 'oficial':
+            dolar_oficial()
+            os.system('cls')
+        elif price_selected == 'blue':
+           dolar_blue()
+           os.system('cls')
+        elif price_selected == 0:
+            compare_prices()
+            os.system('cls')
+        #set flag = 1
+        flag = 1
+    
+    #now the program print the menu for options
     option_menu = print_menu()
     if not 0<option_menu<5:
         input ('Seleccione una opcion valida...(ENTER PARA CONTINUAR)')
